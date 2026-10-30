@@ -1,0 +1,37 @@
+const path = require('path');
+const express = require('express');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const csrf = require('csurf');
+const createSessionMiddleware = require('./config/session');
+const { loadUser } = require('./middleware/auth');
+const { notFound, errorHandler } = require('./middleware/errors');
+const webRoutes = require('./routes/web');
+const apiRoutes = require('./routes/api');
+
+const app = express();
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.disable('x-powered-by');
+if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY));
+app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'], fontSrc: ["'self'", 'https://fonts.gstatic.com'], imgSrc: ["'self'", 'data:', 'https:'], scriptSrc: ["'self'"], upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null } } }));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(express.urlencoded({ extended: false, limit: '60kb' }));
+app.use(express.json({ limit: '60kb', type: 'application/json' }));
+app.use(express.static(path.join(__dirname, '..', 'public'), { maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0 }));
+app.use(createSessionMiddleware());
+app.use(loadUser);
+app.use(csrf({ cookie: false }));
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  res.locals.currentPath = req.path;
+  res.locals.appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
+  next();
+});
+app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false, skip: (req) => req.path.startsWith('/auth') }));
+app.use('/api/v1', apiRoutes);
+app.use('/', webRoutes);
+app.use(notFound);
+app.use(errorHandler);
+module.exports = app;

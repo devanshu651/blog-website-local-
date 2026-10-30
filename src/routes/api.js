@@ -1,0 +1,22 @@
+const express = require('express');
+const rateLimit = require('express-rate-limit');
+const auth = require('../controllers/authController');
+const posts = require('../controllers/postController');
+const { requireAdmin, requireAuth } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { registerRules, loginRules } = require('../validators/auth');
+const { createPostRules, updatePostRules, listPostRules } = require('../validators/posts');
+
+const router = express.Router();
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-7', legacyHeaders: false, message: { error: { message: 'Too many attempts. Try again later.' } } });
+router.get('/auth/csrf', (req, res) => res.json({ csrfToken: req.csrfToken() }));
+router.post('/auth/register', authLimiter, registerRules, validate, auth.register);
+router.post('/auth/login', authLimiter, loginRules, validate, auth.login);
+router.post('/auth/logout', requireAuth, auth.logout);
+router.get('/auth/me', requireAuth, (req, res) => res.json({ data: { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role } }));
+router.get('/posts', listPostRules, validate, posts.list);
+router.get('/posts/:slug', posts.show);
+router.post('/posts', requireAdmin, createPostRules, validate, posts.create);
+router.patch('/posts/:id', requireAdmin, updatePostRules, validate, posts.update);
+router.delete('/posts/:id', requireAdmin, posts.remove);
+module.exports = router;

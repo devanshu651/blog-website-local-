@@ -1,0 +1,9 @@
+<%- include('../partials/header', { title, description }) %>
+<article class="article-page">
+  <a class="back-link" href="/">← Back to stories</a>
+  <header class="article-header"><% if (post.tags && post.tags.length) { %><div class="eyebrow"><span class="eyebrow-line"></span> <%= post.tags.join(' · ') %></div><% } %><h1><%= post.title %></h1><p class="article-deck"><%= post.excerpt %></p><div class="story-meta article-meta"><span>By <%= post.author ? post.author.name : 'Inkwell' %></span><span class="meta-dot">·</span><time datetime="<%= new Date(post.createdAt).toISOString() %>"><%= new Date(post.createdAt).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }) %></time></div></header>
+  <div class="article-art" aria-hidden="true"><span class="article-sun"></span><span class="article-art-word">stay<br><em>curious</em></span><span class="article-art-caption">NOTES FROM THE JOURNAL</span></div>
+  <div class="article-content"><% post.content.split(/\r?\n\s*\r?\n/).forEach((paragraph) => { if (paragraph.trim()) { %><p><%= paragraph.trim() %></p><% } }) %></div>
+  <footer class="article-end"><span>✳</span><p>Thanks for reading. Take the good thought with you.</p><a class="read-link" href="/">Explore more stories <span>↗</span></a></footer>
+</article>
+<%- include('../partials/footer') %>

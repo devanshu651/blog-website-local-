@@ -1,0 +1,25 @@
+<%- include('partials/header', { title, description }) %>
+<section class="hero">
+  <div class="hero-copy"><div class="eyebrow"><span class="eyebrow-line"></span> A JOURNAL FOR THE CURIOUS</div><h1>Ideas, in good<br><em>company.</em></h1><p>Small observations, big questions, and useful things we’ve learned along the way.</p><a class="hero-link" href="#latest">Find your next read <span>↓</span></a></div>
+  <div class="hero-art" aria-hidden="true"><div class="art-sun"></div><div class="art-paper art-paper-back"></div><div class="art-paper art-paper-front"><span class="paper-kicker">FIELD NOTES · 001</span><span class="paper-rule"></span><span class="paper-rule paper-rule-short"></span><span class="paper-flower">✳</span></div><span class="art-caption">Words to wander by</span></div>
+</section>
+<section id="latest" class="stories-section">
+  <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THE JOURNAL</div><h2>Latest stories</h2></div><span class="section-count"><%= posts.length %> <%= posts.length === 1 ? 'story' : 'stories' %></span></div>
+  <% if (posts.length) { %>
+    <div class="story-grid">
+      <% posts.forEach((post, index) => { %>
+        <article class="story-card">
+          <a class="story-art story-art-<%= index % 4 %>" href="/posts/<%= encodeURIComponent(post.slug) %>" tabindex="-1" aria-hidden="true"><span class="story-art-shape"></span><span class="story-art-label"><%= post.tags && post.tags[0] ? post.tags[0] : 'A NOTE FROM INKWELL' %></span><span class="story-art-number">0<%= (index % 9) + 1 %></span></a>
+          <div class="story-meta"><span><%= new Date(post.createdAt).toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' }) %></span><span class="meta-dot">·</span><span>By <%= post.author ? post.author.name : 'Inkwell' %></span></div>
+          <h3><a href="/posts/<%= encodeURIComponent(post.slug) %>"><%= post.title %></a></h3><p class="story-excerpt"><%= post.excerpt %></p>
+          <a class="read-link" href="/posts/<%= encodeURIComponent(post.slug) %>">Read story <span>↗</span></a>
+        </article>
+      <% }) %>
+    </div>
+    <% if (pages > 1) { %><nav class="pagination" aria-label="Story pages"><% if (page > 1) { %><a href="/?page=<%= page - 1 %>">← Newer</a><% } %><span>Page <%= page %> of <%= pages %></span><% if (page < pages) { %><a href="/?page=<%= page + 1 %>">Older →</a><% } %></nav><% } %>
+  <% } else { %>
+    <div class="empty-state"><span class="empty-spark">✳</span><h3>A fresh page.</h3><p>There are no stories just yet. Come back soon for a new read.</p></div>
+  <% } %>
+</section>
+<section class="newsletter"><div class="newsletter-mark">✳</div><div><div class="eyebrow">A LITTLE SOMETHING TO KEEP</div><h2>Good thoughts,<br>delivered occasionally.</h2></div><p>No noise, just our newest stories when they’re ready.</p><a class="button button-dark" href="/register">Become a reader <span>↗</span></a></section>
+<%- include('partials/footer') %>
